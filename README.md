@@ -4,10 +4,9 @@ Use the OAK-D RGBD camera for robotics.
 
 ## Installation
 
-### Pre-Requisites
-
-1. Installing `oakd_vio_zmq` requires **Python 3.10** and above.
-2. `depthai` must be installed using the instructions [here](https://github.com/luxonis/depthai-core/tree/develop) as the RTABMap VIO feature is in early access.
+> [!NOTE] Pre-Requisites
+> 1. Installing `oakd_vio_zmq` requires **Python 3.10** and above.
+> 2. `depthai` must be installed using the instructions [here](https://github.com/luxonis/depthai-core/tree/develop) as the RTABMap VIO feature is in _early access preview_.
 
 ### Installation with `pip
 
@@ -64,4 +63,4 @@ uv add git+https://github.com/sattwik-sahu/oakd-vio-zmq.git
     ```
 
 > [!WARNING]
-> Known issues include the VIO output to get stuck at the identity matrix. This is possibly an issue with the [`RTABMapVIO` node in `depthai`]
+> Known issues include the VIO output getting stuck at the identity matrix. This is possibly an issue with the [`RTABMapVIO` node in `depthai`](https://docs.luxonis.com/software-v3/depthai/examples/rvc2/vslam/rtab_map_vio/).
