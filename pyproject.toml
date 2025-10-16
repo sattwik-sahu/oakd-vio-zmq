@@ -1,0 +1,31 @@
+[project]
+name = "oakd-vio-zmq"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Sattwik Kumar Sahu", email = "sattwik21@iiserb.ac.in" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=2.2.6",
+    "opencv-python>=4.11.0.86",
+    "ormsgpack>=1.11.0",
+    "pyzmq>=27.1.0",
+    "rich>=14.2.0",
+    "scipy>=1.15.3",
+    "typer>=0.19.2",
+]
+
+[project.scripts]
+oakd-vio-zmq = "oakd_vio_zmq:main"
+
+[project.optional-dependencies]
+plot = [
+    "matplotlib>=3.10.7",
+    "open3d>=0.19.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.3,<0.10.0"]
+build-backend = "uv_build"
