@@ -1,7 +1,9 @@
-import typer
-from oakd_vio_zmq.publish import Publisher
 from typing import Annotated
+
+import typer
 from rich.console import Console
+
+from oakd_vio_zmq.publish import Publisher
 
 app = typer.Typer(help="RTABMAP VIO with the OAK-D camera")
 

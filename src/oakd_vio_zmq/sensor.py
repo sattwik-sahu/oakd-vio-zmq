@@ -10,6 +10,31 @@ from oakd_vio_zmq._typing import Image, Pointcloud, TransformationMatrix
 def start_oakd(
     fps: int = 30, width: int = 640, height: int = 400
 ) -> Iterable[tuple[Image, Pointcloud, TransformationMatrix]]:
+    """
+    Start the OAK-D pipeline and continuously yield RGB frames, point clouds, and VIO transformations.
+
+    This function initializes an OAK-D pipeline with RGB, stereo, IMU, and visual-inertial odometry (VIO)
+    modules. It streams synchronized RGB frames, point clouds, and 4x4 transformation matrices representing
+    the estimated camera pose over time. The function is a generator that yields one set of data per frame
+    until the pipeline stops.
+
+    Args:
+        fps (int): Target frame rate for the camera streams.
+        width (int): Width of the RGB and stereo image frames.
+        height (int): Height of the RGB and stereo image frames.
+
+    Yields:
+        tuple:
+            rgb (Image): RGB frame from the OAK-D camera. Shape: `(H, W, 3)`
+            pointcloud (Pointcloud): Point cloud array from the RGBD node. Shape: `(N, 3)`
+            transform (TransformationMatrix): Homogeneous transformation matrix representing camera pose. Shape: `(4, 4)`
+
+    ## Notes
+        - `H` = Image height in pixels
+        - `W` = Image width in pixels
+        - `N` = Number of points in the point cloud. Usually `N = H * W` for dense RGB-D.
+        - Transformation matrix is a 4x4 NumPy array representing rotation and translation in homogeneous coordinates.
+    """
     with dai.Pipeline() as p:
         # Define sources and outputs
         color = p.create(dai.node.Camera).build(boardSocket=dai.CameraBoardSocket.CAM_A)
