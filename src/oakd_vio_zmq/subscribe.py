@@ -59,7 +59,7 @@ class Subscriber:
         self._socket = self._ctx.socket(zmq.SUB)
 
         self._latest_msg: Optional[list[bytes]] = None
-        self._lock = threading.Lock()
+        # self._lock = threading.Lock()
 
         self._running = False
         self._thread: Optional[threading.Thread] = None
@@ -103,8 +103,8 @@ class Subscriber:
         while self._running:
             try:
                 msg = self._socket.recv_multipart(flags=zmq.NOBLOCK)
-                with self._lock:
-                    self._latest_msg = msg  # Overwrite old message with new one
+                self._latest_msg = msg  # Overwrite old message with new one
+                # with self._lock:
             except zmq.Again:
                 time.sleep(0.001)  # No new message, sleep briefly
             except Exception as e:
@@ -131,9 +131,9 @@ class Subscriber:
                     - Metadata (dictionary or custom object)
                 - `None` if no new frame is currently available.
         """
-        with self._lock:
-            msg = self._latest_msg
-            self._latest_msg = None  # Consume message after retrieval
+        # with self._lock:
+        msg = self._latest_msg
+        self._latest_msg = None  # Consume message after retrieval
 
         if msg is None:
             return None

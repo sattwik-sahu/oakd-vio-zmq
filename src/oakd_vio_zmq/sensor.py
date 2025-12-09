@@ -1,14 +1,21 @@
-from typing import Iterable
+from typing import Iterable, Callable, Any
 
 import depthai as dai
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
+import cv2
+from time import sleep
+
 from oakd_vio_zmq._typing import Image, Pointcloud, TransformationMatrix
 
 
 def start_oakd(
-    fps: int = 30, width: int = 640, height: int = 400
+    callback: Callable[[Image, Pointcloud, TransformationMatrix], Any] | None = None,
+    fps: int = 30,
+    width: int = 640,
+    height: int = 400,
+    # ) -> None:
 ) -> Iterable[tuple[Image, Pointcloud, TransformationMatrix]]:
     """
     Start the OAK-D pipeline and continuously yield RGB frames, point clouds, and VIO transformations.
@@ -111,5 +118,8 @@ def start_oakd(
                 [qw, qx, qy, qz], scalar_first=True
             ).as_matrix()
             transform_matrix[:3, 3] = np.array([tx, ty, tz])
+
+            if callback is not None:
+                callback(rgb, pcl, transform_matrix)
 
             yield rgb, pcl, transform_matrix
