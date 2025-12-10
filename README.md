@@ -12,11 +12,13 @@ Use the OAK-D RGBD camera for robotics.
 
 ```bash
 pip install git+https://github.com/sattwik-sahu/oakd-vio-zmq.git
+pip install --extra-index-url https://artifacts.luxonis.com/artifactory/luxonis-python-release-local/ --pre -U depthai
 ```
 ### Installation with `uv`
 
 ```bash
 uv add git+https://github.com/sattwik-sahu/oakd-vio-zmq.git
+uv pip install --extra-index-url https://artifacts.luxonis.com/artifactory/luxonis-python-release-local/ --pre -U depthai
 ```
 
 ### Install from Source
@@ -30,7 +32,9 @@ uv add git+https://github.com/sattwik-sahu/oakd-vio-zmq.git
     cd oakd_vio_zmq
     pip install -e "."
     # Or with uv
-    uv install --editable .
+    uv pip install --editable .
+
+    uv pip install --extra-index-url https://artifacts.luxonis.com/artifactory/luxonis-python-release-local/ --pre -U depthai
     ```
 
 ## Usage
@@ -41,21 +45,33 @@ uv add git+https://github.com/sattwik-sahu/oakd-vio-zmq.git
     ```
 2. Get the data in Python
     ```python
-    from oakd_vio_zmq.subscribe import Subscriber
     import cv2
+    from oakd_vio_zmq.subscribe import Subscriber
 
 
     def main():
-        STREAM_NAME = ... # Whatever <STREAM_NAME> you started the publisher with
-        sub = Subscriber(stream_name=STREAM_NAME)
+        sub = Subscriber(stream_name="oakd")
         sub.connect()
         while True:
             msg = sub.get_next()
+
             if msg is not None:
-                cv2.imshow("Camera", msg.rgb)  # Shape: (640, 400, 3)
+                # Extract required sensor readings
+                rgb = msg.rgb
+                depth = msg.depth
+                pointcloud = msg.pointcloud
+                T = msg.transform
+
+                # Show RGB image and depth map
+                cv2.imshow("Camera", msg.rgb)
+                cv2.imshow("Depth", msg.depth / 10e3)
                 cv2.waitKey(1)
-                print(f"Pointcloud shape: {msg.pointcloud.shape}") # Shape: (256000, 3)
-                print(f"Transformation matrix:\n{msg.transform}") # Shape: (4, 4)
+
+                # Show other shapes
+                print(f"RGB image shape: {rgb.shape}")
+                print(f"Depth map shape: {depth.shape}")
+                print(f"Pointcloud shape: {pointcloud.shape}")
+                print(f"Transformation matrix:\n{T}")
 
 
     if __name__ == "__main__":

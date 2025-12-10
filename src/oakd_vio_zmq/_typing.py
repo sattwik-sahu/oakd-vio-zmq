@@ -14,6 +14,9 @@ Pointcloud = npt.NDArray[Float]
 """A pointcloud containing points as 64-bit floating point numbers"""
 
 TransformationMatrix = npt.NDArray[Float]
+"""The transformation matrix from current pose to starting pose"""
+
+DepthMap = npt.NDArray[Float]
 
 
 class NDArrayMetadata(TypedDict):
@@ -27,6 +30,7 @@ class RGBD_VIO_Metadata(TypedDict):
     """Metadata for an RGBD VIO message"""
 
     rgb: NDArrayMetadata
+    depth: NDArrayMetadata
     pointcloud: NDArrayMetadata
     transform: NDArrayMetadata
 
@@ -34,5 +38,6 @@ class RGBD_VIO_Metadata(TypedDict):
 @dataclass
 class RGBD_VIO_Message:
     rgb: Image
+    depth: DepthMap
     pointcloud: Pointcloud
     transform: TransformationMatrix

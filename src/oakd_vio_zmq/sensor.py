@@ -1,13 +1,9 @@
-from typing import Iterable, Callable, Any
+from typing import Any, Callable, Iterable
 
 import depthai as dai
-import numpy as np
-from scipy.spatial.transform import Rotation as R
 
-import cv2
-from time import sleep
-
-from oakd_vio_zmq._typing import Image, Pointcloud, TransformationMatrix
+from oakd_vio_zmq._typing import DepthMap, Image, Pointcloud, TransformationMatrix
+from oakd_vio_zmq.helpers import create_transformation_matrix
 
 
 def start_oakd(
@@ -16,7 +12,7 @@ def start_oakd(
     width: int = 640,
     height: int = 400,
     # ) -> None:
-) -> Iterable[tuple[Image, Pointcloud, TransformationMatrix]]:
+) -> Iterable[tuple[Image, DepthMap, Pointcloud, TransformationMatrix]]:
     """
     Start the OAK-D pipeline and continuously yield RGB frames, point clouds, and VIO transformations.
 
@@ -33,6 +29,7 @@ def start_oakd(
     Yields:
         tuple:
             rgb (Image): RGB frame from the OAK-D camera. Shape: `(H, W, 3)`
+            depth_map (DepthMap): The depth map of the image. Shape: `(H, W)`
             pointcloud (Pointcloud): Point cloud array from the RGBD node. Shape: `(N, 3)`
             transform (TransformationMatrix): Homogeneous transformation matrix representing camera pose. Shape: `(4, 4)`
 
@@ -99,6 +96,7 @@ def start_oakd(
         q_cam = color_out.createOutputQueue()
         q_odom = odom.transform.createOutputQueue()
         q_pcl = rgbd.pcl.createOutputQueue()
+        q_depth = stereo.depth.createOutputQueue()
 
         p.start()
 
@@ -106,6 +104,9 @@ def start_oakd(
             rgb = q_cam.get().getCvFrame()  # type: ignore
             transform = q_odom.get()
             pcl = q_pcl.get().getPoints()  # type: ignore
+            depth = q_depth.get().getFrame()  # type: ignore
+
+            print(depth.shape)
 
             quaternion, translation = (
                 transform.getQuaternion(),  # type: ignore
@@ -113,13 +114,11 @@ def start_oakd(
             )
             qw, qx, qy, qz = quaternion.qw, quaternion.qx, quaternion.qy, quaternion.qz
             tx, ty, tz = translation.x, translation.y, translation.z
-            transform_matrix = np.eye(4)
-            transform_matrix[:3, :3] = R.from_quat(
-                [qw, qx, qy, qz], scalar_first=True
-            ).as_matrix()
-            transform_matrix[:3, 3] = np.array([tx, ty, tz])
+            transform_matrix = create_transformation_matrix(
+                qw=qw, qx=qx, qy=qy, qz=qz, tx=tx, ty=ty, tz=tz
+            )
 
             if callback is not None:
                 callback(rgb, pcl, transform_matrix)
 
-            yield rgb, pcl, transform_matrix
+            yield rgb, depth, pcl, transform_matrix

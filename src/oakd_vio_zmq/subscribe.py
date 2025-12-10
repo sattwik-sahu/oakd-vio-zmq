@@ -138,10 +138,11 @@ class Subscriber:
         if msg is None:
             return None
 
-        metadata_bytes, rgb_frame, pointcloud_frame, transform_frame = msg
+        metadata_bytes, rgb_frame, depth_frame, pointcloud_frame, transform_frame = msg
         return parse_message(
             metadata_bytes=metadata_bytes,  # type: ignore
             rgb_frame=rgb_frame,  # type: ignore
+            depth_frame=depth_frame,  # type: ignore
             pointcloud_frame=pointcloud_frame,  # type: ignore
             transform_frame=transform_frame,  # type: ignore
         )

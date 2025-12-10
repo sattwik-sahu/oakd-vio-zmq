@@ -1,7 +1,7 @@
 import ormsgpack
 import zmq
 
-from oakd_vio_zmq._typing import Image, Pointcloud, TransformationMatrix
+from oakd_vio_zmq._typing import DepthMap, Image, Pointcloud, TransformationMatrix
 from oakd_vio_zmq.helpers import get_zmq_uri
 from oakd_vio_zmq.sensor import start_oakd
 from oakd_vio_zmq.utils import create_metadata
@@ -40,13 +40,18 @@ class Publisher:
         self._socket.bind(addr=self._stream_uri)
 
     def _send(
-        self, rgb: Image, pointcloud: Pointcloud, transform: TransformationMatrix
+        self,
+        rgb: Image,
+        depth: DepthMap,
+        pointcloud: Pointcloud,
+        transform: TransformationMatrix,
     ) -> None:
         """
         Serializes and transmits a single RGB-D-VIO message via ZeroMQ.
 
         Args:
             rgb (Image): RGB image frame from the OAK-D camera. Shape: `(H, W, 3)`
+            depth (DepthMap): The depth map. Shape: `(H, W)`
             pointcloud (Pointcloud): Corresponding 3D point cloud data. Shape: `(N, 3)`
             transform (TransformationMatrix): Transformation matrix representing camera pose. Shape: `(4, 4)`
 
@@ -55,11 +60,13 @@ class Publisher:
             - `W` = Image width in pixels
             - `N` = Number of points in pointcloud. `N = H * W` for OAK-D.
         """
-        metadata = create_metadata(rgb=rgb, pointcloud=pointcloud, transform=transform)
+        metadata = create_metadata(
+            rgb=rgb, depth=depth, pointcloud=pointcloud, transform=transform
+        )
         self._socket.send_multipart(
             [
                 ormsgpack.packb(metadata),
-                *[zmq.Frame(m) for m in (rgb, pointcloud, transform)],
+                *[zmq.Frame(m) for m in (rgb, depth, pointcloud, transform)],
             ]
         )
 
@@ -72,5 +79,5 @@ class Publisher:
         message containing metadata, image, point cloud, and transformation
         data. The loop runs indefinitely at the configured frame rate.
         """
-        for rgb, pointcloud, transform in start_oakd(fps=self._fps):
-            self._send(rgb=rgb, pointcloud=pointcloud, transform=transform)
+        for rgb, depth, pointcloud, transform in start_oakd(fps=self._fps):
+            self._send(rgb=rgb, depth=depth, pointcloud=pointcloud, transform=transform)
