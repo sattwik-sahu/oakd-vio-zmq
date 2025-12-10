@@ -106,8 +106,6 @@ def start_oakd(
             pcl = q_pcl.get().getPoints()  # type: ignore
             depth = q_depth.get().getFrame()  # type: ignore
 
-            print(depth.shape)
-
             quaternion, translation = (
                 transform.getQuaternion(),  # type: ignore
                 transform.getTranslation(),  # type: ignore
